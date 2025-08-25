@@ -105,6 +105,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   // Handle login logic here
+                  Navigator.pushReplacementNamed(context, AppRoutes.tasksScreen);
                 },
                 child: const Text(
                   'LOGIN',
@@ -117,24 +118,32 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Don't have an account? "),
-                RichText(
-                  text: TextSpan(
-                    text: 'Sign up',
-                    style: const TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
+            SizedBox(
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Don't have an account? ",
+                    style: TextStyle(
+                      fontSize: 20,
                     ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        Navigator.pushNamed(context, AppRoutes.signupScreen);
-                      },
                   ),
-                ),
-              ],
+                  RichText(
+                    text: TextSpan(
+                      text: 'Sign up',
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontSize: 20,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.pushNamed(context, AppRoutes.signupScreen);
+                        },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
