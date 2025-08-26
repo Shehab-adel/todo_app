@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:todo_app/routes/app_routes.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({Key? key}) : super(key: key);
@@ -48,7 +49,7 @@ class _TasksScreenState extends State<TasksScreen> {
               width: MediaQuery.of(context).size.width * 0.43,
               child: ElevatedButton(
                 onPressed: () {
-                  // Add task functionality
+                  Navigator.pushNamed(context, AppRoutes.addNewTaskScreen);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
