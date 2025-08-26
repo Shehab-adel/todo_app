@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'models/task.dart';
+import 'services/firebase_service.dart';
 
 class AddNewTaskScreen extends StatefulWidget {
   const AddNewTaskScreen({Key? key}) : super(key: key);
@@ -11,6 +13,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _taskController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   DateTime? _selectedDate;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -166,12 +169,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  if (_taskController.text.isNotEmpty) {
-                    // TODO: Save task logic here
-                    Navigator.pop(context);
-                  }
-                },
+                onPressed: _isLoading ? null : _saveTask,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -179,14 +177,23 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Save Task',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Save Task',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 40),
@@ -250,6 +257,88 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _saveTask() async {
+    if (_taskController.text.trim().isEmpty) {
+      _showErrorDialog('Please enter a task title');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final task = Task(
+        title: _taskController.text.trim(),
+        description: _descriptionController.text.trim(),
+        dueDate: _selectedDate,
+      );
+
+      final taskId = await FirebaseService.addTask(task);
+
+      if (taskId != null) {
+        if (mounted) {
+          _showSuccessDialog('Task saved successfully!');
+        }
+      } else {
+        if (mounted) {
+          _showErrorDialog('Failed to save task. Please try again.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('An error occurred: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Go back to previous screen
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 

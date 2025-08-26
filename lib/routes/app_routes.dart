@@ -4,12 +4,14 @@ import 'package:todo_app/login_screen.dart';
 import 'package:todo_app/signup_screen.dart';
 import 'package:todo_app/splash_screen.dart';
 import 'package:todo_app/tasks_screen.dart';
+import 'package:todo_app/task_list_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/';
   static const String loginScreen = '/login';
   static const String signupScreen = '/signup';
   static const String tasksScreen = '/tasks';
+  static const String taskListScreen = '/task-list';
   static const String addNewTaskScreen = '/add-new-task';
 
   static Map<String, WidgetBuilder> routes = {
@@ -17,6 +19,7 @@ class AppRoutes {
     loginScreen: (context) => const LoginScreen(),
     signupScreen: (context) => const SignupScreen(),
     tasksScreen: (context) => const TasksScreen(),
+    taskListScreen: (context) => const TaskListScreen(),
     addNewTaskScreen: (context) => const AddNewTaskScreen(),
   };
 }
