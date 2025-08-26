@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/task.dart';
-import 'services/firebase_service.dart';
+import 'services/firebase_services.dart';
 
 class AddNewTaskScreen extends StatefulWidget {
   const AddNewTaskScreen({Key? key}) : super(key: key);
@@ -277,7 +277,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         dueDate: _selectedDate,
       );
 
-      final taskId = await FirebaseService.addTask(task);
+      final taskId = await FirebaseServices.addTask(task);
 
       if (taskId != null) {
         if (mounted) {

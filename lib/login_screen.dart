@@ -1,15 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:todo_app/routes/app_routes.dart';
+import 'services/firebase_services.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      User? user = await FirebaseServices.signInWithEmailAndPassword(
+        emailController.text.trim(),
+        passwordController.text,
+      );
+
+      if (user != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to tasks screen
+        Navigator.pushReplacementNamed(context, AppRoutes.tasksScreen);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -29,6 +90,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Form(
+              key: _formKey,
               child: Column(
                 children: [
                   TextFormField(
@@ -36,7 +98,7 @@ class LoginScreen extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: const TextStyle(
-                        color: Colors.grey, // Set label color to grey
+                        color: Colors.grey,
                         fontSize: 18,
                       ),
                       border: OutlineInputBorder(
@@ -55,11 +117,21 @@ class LoginScreen extends StatelessWidget {
                       fillColor: const Color(0xFFF3F6FA),
                     ),
                     style: const TextStyle(
-                      color: Colors.grey, // Set input text color to grey
+                      color: Colors.grey,
                       fontSize: 18,
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    cursorColor: Colors.grey, // Set cursor color to grey
+                    cursorColor: Colors.grey,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                          .hasMatch(value)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -67,7 +139,7 @@ class LoginScreen extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Password',
                       labelStyle: const TextStyle(
-                        color: Colors.grey, // Set label color to grey
+                        color: Colors.grey,
                         fontSize: 18,
                       ),
                       border: OutlineInputBorder(
@@ -84,13 +156,32 @@ class LoginScreen extends StatelessWidget {
                       ),
                       filled: true,
                       fillColor: const Color(0xFFF3F6FA),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
                     style: const TextStyle(
-                      color: Colors.grey, // Set input text color to grey
+                      color: Colors.grey,
                       fontSize: 18,
                     ),
-                    obscureText: true,
-                    cursorColor: Colors.grey, // Set cursor color to grey
+                    obscureText: _obscurePassword,
+                    cursorColor: Colors.grey,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
                   ),
                 ],
               ),
@@ -103,18 +194,24 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {
-                  // Handle login logic here
-                  Navigator.pushReplacementNamed(context, AppRoutes.tasksScreen);
-                },
-                child: const Text(
-                  'LOGIN',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
+                onPressed: _isLoading ? null : _handleLogin,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'LOGIN',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 24),

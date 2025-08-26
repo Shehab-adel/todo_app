@@ -7,7 +7,7 @@ class Task {
   final DateTime? dueDate;
   final bool isCompleted;
   final DateTime createdAt;
-
+//
   Task({
     this.id,
     required this.title,
@@ -34,7 +34,7 @@ class Task {
       id: id,
       title: map['title'] ?? '',
       description: map['description'] ?? '',
-      dueDate: map['dueDate'] != null 
+      dueDate: map['dueDate'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['dueDate'])
           : null,
       isCompleted: map['isCompleted'] ?? false,
