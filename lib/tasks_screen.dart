@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import "package:flutter/material.dart";
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/models/task.dart';
 import 'package:todo_app/routes/app_routes.dart';
 import 'package:todo_app/services/firebase_services.dart';
@@ -11,6 +14,11 @@ class TasksScreen extends StatefulWidget {
 }
 
 class _TasksScreenState extends State<TasksScreen> {
+  initState() {
+    super.initState();
+    getphotofromshared();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,12 +40,11 @@ class _TasksScreenState extends State<TasksScreen> {
             padding: const EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
               radius: 20,
+              backgroundImage: imageFile != null ? FileImage(imageFile!) : null,
               backgroundColor: Colors.blue,
-              child: Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: imageFile == null
+                  ? const Icon(Icons.person, color: Colors.white, size: 24)
+                  : null,
             ),
           ),
         ],
@@ -191,5 +198,16 @@ class _TasksScreenState extends State<TasksScreen> {
         ),
       ),
     );
+  }
+
+  File? imageFile;
+  void getphotofromshared() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString('profile_image');
+    if (savedPath != null) {
+      setState(() {
+        imageFile = File(savedPath);
+      });
+    }
   }
 }

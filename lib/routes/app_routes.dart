@@ -10,7 +10,7 @@ class AppRoutes {
   static const String loginScreen = '/login';
   static const String signupScreen = '/signup';
   static const String tasksScreen = '/tasks';
-  static const String addNewTaskScreen = '/add-new-task';
+  static const String addNewTaskScreen = '/addNewTask';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => const SplashScreen(),

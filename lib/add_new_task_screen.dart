@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'models/task.dart';
 import 'services/firebase_services.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddNewTaskScreen extends StatefulWidget {
   const AddNewTaskScreen({Key? key}) : super(key: key);
@@ -16,6 +21,12 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   DateTime? _selectedDate;
   bool _isLoading = false;
   final userId = FirebaseAuth.instance.currentUser!.uid;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getphotofromshared();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,28 +213,34 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
             Center(
               child: Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.blue,
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 40,
+                  GestureDetector(
+                    onTap: () {
+                      _pickImage();
+                    },
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.blue,
+                      backgroundImage:
+                          imageFile != null ? FileImage(imageFile!) : null,
+                      child: imageFile == null
+                          ? const Icon(Icons.person,
+                              color: Colors.white, size: 40)
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'john.doe@example.com',
-                    style: TextStyle(
+                  // const Text(
+                  //   'John Doe',
+                  //   style: TextStyle(
+                  //     fontSize: 20,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: Colors.black,
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 8),
+                  Text(
+                    FirebaseServices.getCurrentUser()!.email!,
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
                     ),
@@ -233,8 +250,9 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Implement logout functionality
-                        Navigator.pop(context);
+                        FirebaseServices.signOut();
+                        Navigator.pushReplacementNamed(
+                            context, '/login'); // Navigate to login screen
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -342,6 +360,32 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         );
       },
     );
+  }
+
+  File? imageFile;
+  final ImagePicker _picker = ImagePicker();
+
+  void getphotofromshared() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString('profile_image');
+    if (savedPath != null) {
+      setState(() {
+        imageFile = File(savedPath);
+      });
+    }
+  }
+
+  // pick image from gallery
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profile_image', pickedFile.path);
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
+    }
   }
 
   @override

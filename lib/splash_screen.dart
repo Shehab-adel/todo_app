@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
 import 'package:todo_app/routes/app_routes.dart';
@@ -14,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSavedImage();
     Timer(const Duration(seconds: 2), () {
       Navigator.of(context).pushReplacementNamed(AppRoutes.loginScreen);
     });
@@ -56,5 +60,14 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
     );
+  }
+
+  // Load saved image path from SharedPreferences
+  Future<void> _loadSavedImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString('profile_image');
+    if (savedPath == null) {
+      return;
+    }
   }
 }
