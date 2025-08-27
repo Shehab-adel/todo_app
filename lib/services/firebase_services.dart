@@ -5,7 +5,7 @@ import '../models/task.dart';
 class FirebaseServices {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
-  static const String _tasksCollection = 'tasks';
+  // static const String _tasksCollection = 'tasks';
 
   // Authentication Methods
 
@@ -81,10 +81,16 @@ class FirebaseServices {
   }
 
   // Add a new task to Firestore
-  static Future<String?> addTask(Task task) async {
+  static Future<String?> addTask(Task task, String userId) async {
     try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception("No user signed in");
+      }
+      final taskData = task.toMap();
+      taskData['userId'] = user.uid;
       DocumentReference docRef =
-          await _firestore.collection(_tasksCollection).add(task.toMap());
+          await _firestore.collection('tasks').add(task.toMap());
       return docRef.id;
     } catch (e) {
       print('Error adding task: $e');
@@ -95,8 +101,10 @@ class FirebaseServices {
   // Get all tasks from Firestore
   static Future<List<Task>> getTasks() async {
     try {
+      final user = _auth.currentUser;
       QuerySnapshot querySnapshot = await _firestore
-          .collection(_tasksCollection)
+          .collection('tasks')
+          .where('userId', isEqualTo: user!.uid)
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -110,10 +118,7 @@ class FirebaseServices {
   // Update a task in Firestore
   static Future<bool> updateTask(String taskId, Task task) async {
     try {
-      await _firestore
-          .collection(_tasksCollection)
-          .doc(taskId)
-          .update(task.toMap());
+      await _firestore.collection('tasks').doc(taskId).update(task.toMap());
       return true;
     } catch (e) {
       print('Error updating task: $e');
@@ -124,7 +129,7 @@ class FirebaseServices {
   // Delete a task from Firestore
   static Future<bool> deleteTask(String taskId) async {
     try {
-      await _firestore.collection(_tasksCollection).doc(taskId).delete();
+      await _firestore.collection('tasks').doc(taskId).delete();
       return true;
     } catch (e) {
       print('Error deleting task: $e');
@@ -134,8 +139,10 @@ class FirebaseServices {
 
   // Get tasks as a stream for real-time updates
   static Stream<List<Task>> getTasksStream() {
+    final user = _auth.currentUser;
     return _firestore
-        .collection(_tasksCollection)
+        .collection('tasks')
+        .where('userId', isEqualTo: user?.uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) =>
@@ -147,7 +154,7 @@ class FirebaseServices {
       String taskId, bool isCompleted) async {
     try {
       await _firestore
-          .collection(_tasksCollection)
+          .collection('tasks')
           .doc(taskId)
           .update({'isCompleted': isCompleted});
       return true;

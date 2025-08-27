@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'models/task.dart';
 import 'services/firebase_services.dart';
@@ -14,6 +15,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   DateTime? _selectedDate;
   bool _isLoading = false;
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Widget build(BuildContext context) {
@@ -277,7 +279,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         dueDate: _selectedDate,
       );
 
-      final taskId = await FirebaseServices.addTask(task);
+      final taskId = await FirebaseServices.addTask(task, userId);
 
       if (taskId != null) {
         if (mounted) {

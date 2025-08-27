@@ -28,7 +28,7 @@ class _TasksScreenState extends State<TasksScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          const Padding(
+          Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
               radius: 20,

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Task {
   final String? id;
@@ -7,7 +8,8 @@ class Task {
   final DateTime? dueDate;
   final bool isCompleted;
   final DateTime createdAt;
-//
+  final String userId;
+
   Task({
     this.id,
     required this.title,
@@ -15,7 +17,9 @@ class Task {
     this.dueDate,
     this.isCompleted = false,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    String? userId, // اختياري
+  })  : createdAt = createdAt ?? DateTime.now(),
+        userId = userId ?? FirebaseAuth.instance.currentUser?.uid ?? '';
 
   // Convert Task to Map for Firestore
   Map<String, dynamic> toMap() {
@@ -25,6 +29,7 @@ class Task {
       'dueDate': dueDate?.millisecondsSinceEpoch,
       'isCompleted': isCompleted,
       'createdAt': createdAt.millisecondsSinceEpoch,
+      'userId': userId,
     };
   }
 
@@ -32,6 +37,7 @@ class Task {
   factory Task.fromMap(Map<String, dynamic> map, String id) {
     return Task(
       id: id,
+      userId: map['userId'] ?? '',
       title: map['title'] ?? '',
       description: map['description'] ?? '',
       dueDate: map['dueDate'] != null
@@ -56,9 +62,11 @@ class Task {
     DateTime? dueDate,
     bool? isCompleted,
     DateTime? createdAt,
+    String? userId,
   }) {
     return Task(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
