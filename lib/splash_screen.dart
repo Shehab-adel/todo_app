@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-
 import 'package:todo_app/routes/app_routes.dart';
+import 'services/firebase_services.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -19,7 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _loadSavedImage();
     Timer(const Duration(seconds: 2), () {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.loginScreen);
+      FirebaseServices.isUserSignedIn()
+          ? Navigator.of(context).pushReplacementNamed(AppRoutes.tasksScreen)
+          : Navigator.of(context).pushReplacementNamed(AppRoutes.loginScreen);
     });
   }
 
